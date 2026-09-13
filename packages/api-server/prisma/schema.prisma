@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// The MVP runs as a single demo user; real auth is deferred, not forgotten.
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  createdAt DateTime  @default(now())
+  holdings  Holding[]
+}
+
+model Holding {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  symbol String
+  /// Crypto quantities need far more precision than money does.
+  quantity         Decimal @db.Decimal(38, 18)
+  averageCostBasis Decimal @db.Decimal(38, 8)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Market value and P&L are derived from live prices on read, never stored.
+  @@unique([userId, symbol])
+  @@index([userId])
+}
