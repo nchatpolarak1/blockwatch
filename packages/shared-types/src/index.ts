@@ -36,11 +36,14 @@ export function assetByPair(pair: string): WatchlistAsset | undefined {
 export interface PriceTick {
   symbol: string;
   pair: string;
+  /** Mid of the best bid and ask — the mark price we value holdings at. */
   price: number;
-  /** 24h rolling open, used to derive the change percentage. */
-  open24h: number;
-  changePct24h: number;
-  /** Exchange event time, epoch ms. */
+  bid: number;
+  ask: number;
+  /** 24h rolling open from the REST poll; null until the first poll lands. */
+  open24h: number | null;
+  changePct24h: number | null;
+  /** Ingest time, epoch ms. The book stream carries no exchange timestamp. */
   timestamp: number;
 }
 
