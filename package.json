@@ -1,0 +1,27 @@
+{
+  "name": "blockwatch",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Real-time crypto portfolio tracker with live WebSocket price streaming",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n ingestor,api,web -c magenta,cyan,green \"npm:dev:ingestor\" \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:ingestor": "npm run dev --workspace @blockwatch/price-ingestor",
+    "dev:api": "npm run dev --workspace @blockwatch/api-server",
+    "dev:web": "npm run dev --workspace @blockwatch/frontend",
+    "infra:up": "docker compose up -d postgres redis",
+    "infra:down": "docker compose down",
+    "db:migrate": "npm run db:migrate --workspace @blockwatch/api-server",
+    "db:seed": "npm run db:seed --workspace @blockwatch/api-server",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
