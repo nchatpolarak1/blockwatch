@@ -1,20 +1,8 @@
-import { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
-import { WATCHLIST_SYMBOLS, assetBySymbol, type Holding } from '@blockwatch/shared-types';
+import { WATCHLIST_SYMBOLS, assetBySymbol } from '@blockwatch/shared-types';
 import { getDemoUserId, prisma } from '../db.js';
-
-type HoldingRow = Prisma.HoldingGetPayload<object>;
-
-function toDto(row: HoldingRow): Holding {
-  return {
-    id: row.id,
-    symbol: row.symbol,
-    quantity: row.quantity.toNumber(),
-    averageCostBasis: row.averageCostBasis.toNumber(),
-    createdAt: row.createdAt.toISOString(),
-  };
-}
+import { toHoldingDto } from '../holdingDto.js';
 
 // Only watchlist symbols are accepted: anything else has no price feed behind it
 // and would sit in the table permanently unvalued.
@@ -49,7 +37,7 @@ holdingsRouter.get('/', async (_req, res) => {
     where: { userId },
     orderBy: { createdAt: 'asc' },
   });
-  res.json({ holdings: rows.map(toDto) });
+  res.json({ holdings: rows.map(toHoldingDto) });
 });
 
 holdingsRouter.post('/', async (req, res) => {
@@ -72,7 +60,7 @@ holdingsRouter.post('/', async (req, res) => {
   }
 
   const row = await prisma.holding.create({ data: { userId, ...parsed.data } });
-  res.status(201).json(toDto(row));
+  res.status(201).json(toHoldingDto(row));
 });
 
 holdingsRouter.patch('/:id', async (req, res) => {
@@ -94,7 +82,7 @@ holdingsRouter.patch('/:id', async (req, res) => {
   }
 
   const row = await prisma.holding.findUniqueOrThrow({ where: { id: req.params.id } });
-  res.json(toDto(row));
+  res.json(toHoldingDto(row));
 });
 
 holdingsRouter.delete('/:id', async (req, res) => {

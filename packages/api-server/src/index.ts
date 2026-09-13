@@ -5,6 +5,7 @@ import { config } from './config.js';
 import { prisma } from './db.js';
 import { closeRedis, readCachedTicks } from './redis.js';
 import { holdingsRouter } from './routes/holdings.js';
+import { buildPortfolio } from './services/portfolioService.js';
 import { attachPriceBroadcaster } from './ws/priceBroadcaster.js';
 
 const app = express();
@@ -17,6 +18,10 @@ app.get('/health', (_req, res) => {
 
 app.get('/api/prices', async (_req, res) => {
   res.json({ ticks: await readCachedTicks() });
+});
+
+app.get('/api/portfolio', async (_req, res) => {
+  res.json(await buildPortfolio());
 });
 
 app.use('/api/holdings', holdingsRouter);
