@@ -27,5 +27,49 @@ services:
       timeout: 3s
       retries: 10
 
+  # Under the "app" profile so `npm run infra:up` still starts only the
+  # datastores for local development against `npm run dev`.
+  ingestor:
+    profiles: ['app']
+    build:
+      context: .
+      dockerfile: packages/price-ingestor/Dockerfile
+    environment:
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  api:
+    profiles: ['app']
+    build:
+      context: .
+      dockerfile: packages/api-server/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://blockwatch:blockwatch@postgres:5432/blockwatch?schema=public
+      REDIS_URL: redis://redis:6379
+      CORS_ORIGIN: http://localhost:3000
+      PORT: 4000
+    ports:
+      - '4000:4000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    profiles: ['app']
+    build:
+      context: .
+      dockerfile: packages/frontend/Dockerfile
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
+    restart: unless-stopped
+
 volumes:
   postgres-data:

@@ -68,20 +68,27 @@ workspaces, Docker Compose.
 
 ## Running it
 
-Requires Node 20+ and Docker.
+Everything in containers, one command:
 
 ```bash
 git clone https://github.com/nchatpolarak1/blockwatch.git
 cd blockwatch
+docker compose --profile app up --build
+```
+
+The API applies migrations on boot. Open <http://localhost:3000>.
+
+For development, run the datastores in Docker and the three services on the host so they reload on
+change (requires Node 20+):
+
+```bash
 npm install
 cp .env.example .env
-npm run infra:up      # Postgres + Redis
+npm run infra:up      # Postgres + Redis only
 npm run db:migrate    # create the schema
 npm run db:seed       # a few starter positions (optional)
 npm run dev           # ingestor + API + dashboard
 ```
-
-Then open <http://localhost:3000>.
 
 Redis is published on **6380** rather than 6379 so the project does not collide with a Redis already
 running on your machine. Every service falls back to sensible localhost defaults, so `.env` is only
